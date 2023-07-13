@@ -7,8 +7,7 @@ class CartManager {
 
   async getCarts() {
     try {
-      
-      const carts = await Cart.find().exec();
+      const carts = await Cart.find().populate('products.product').exec();
       return carts;
     } catch (err) {
       throw new Error('Error al obtener los carritos');
@@ -17,8 +16,8 @@ class CartManager {
 
   async saveCarts(carts) {
     try {
-     
-      await Cart.deleteMany({}); 
+
+      await Cart.deleteMany({});
       await Cart.insertMany(carts);
     } catch (err) {
       throw new Error('Error al guardar los carritos');
@@ -27,38 +26,35 @@ class CartManager {
 
   async createCart() {
     try {
-      const carts = await this.getCarts();
-
       const newCart = {
         products: []
       };
-
-      carts.push(newCart);
-
-      await this.saveCarts(carts);
-
-      return newCart;
+      const cart = new Cart(newCart);
+      
+      await cart.save();
+    
+      return cart;
     } catch (err) {
-      throw new Error('Error al crear el carrito');
+      console.error('Error creating cart:', err);
+      throw new Error('Error creating cart');
     }
   }
 
   async getCartById(cartId) {
     try {
-      const cart = await Cart.findOne({ id: cartId }).exec();
+      const cart = await Cart.findOne({ _id: cartId }).populate('products.product').lean().exec();
       return cart;
     } catch (err) {
-      throw new Error('Error al obtener el carrito');
+      throw new Error('Error retrieving cart');
     }
   }
-
   async addProductToCart(cartId, productId) {
     try {
       const cart = await Cart.findOneAndUpdate(
         { _id: cartId },
         { $inc: { 'products.$[elem].quantity': 1 } },
         { arrayFilters: [{ 'elem.product': productId }], new: true }
-      );
+      ).populate('products.product');
 
       if (!cart) {
         throw new Error('Cart not found');
@@ -76,7 +72,7 @@ class CartManager {
     }
   }
 
-  
+
   async removeProductFromCart(cartId, productId) {
     try {
       const cart = await Cart.findOneAndUpdate(
@@ -89,7 +85,7 @@ class CartManager {
       throw new Error('Error al eliminar el producto del carrito');
     }
   }
-  
+
   async updateCartProducts(cartId, products) {
     try {
       const cart = await Cart.findOneAndUpdate(
@@ -102,7 +98,7 @@ class CartManager {
       throw new Error('Error al actualizar el carrito');
     }
   }
-  
+
   async updateProductQuantity(cartId, productId, quantity) {
     try {
       const cart = await Cart.findOneAndUpdate(
@@ -115,7 +111,7 @@ class CartManager {
       throw new Error('Error al actualizar la cantidad del producto');
     }
   }
-  
+
   async clearCart(cartId) {
     try {
       const cart = await Cart.findOneAndUpdate(

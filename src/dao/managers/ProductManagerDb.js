@@ -1,3 +1,4 @@
+import productModel from '../models/productModel.js';
 import Product from '../models/productModel.js';
 
 class ProductManager {
@@ -140,23 +141,21 @@ class ProductManager {
       throw new Error('Error eliminando el producto: ' + err.message);
     }
   }
-  async getProductsPage(query, sort, limit, page) {
+  async getProductsPage(limit, page) {
     try {
-      const startIndex = (page - 1) * limit;
-      const totalCount = await Product.countDocuments(query);
-      const totalPages = Math.ceil(totalCount / limit);
+      const options = {
+        limit: limit,
+        page: page,
+      };
   
-      const products = await Product.find(query)
-        .sort(sort)
-        .limit(limit)
-        .skip(startIndex)
-        .lean();
+      const { docs: products, totalPages, hasPrevPage, hasNextPage, prevPage, nextPage } = await productModel.paginate({},{limit:10,page,lean:true});
   
-      return { products, totalPages };
+      return { products, totalPages, hasPrevPage, hasNextPage, prevPage, nextPage };
     } catch (err) {
-      throw new Error('Error retrieving products: ' + err.message);
+      throw new Error('Error retrieving products');
     }
   }
+
 }
 
 export default ProductManager;
