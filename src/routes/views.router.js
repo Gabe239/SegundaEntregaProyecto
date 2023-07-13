@@ -30,9 +30,7 @@ router.get('/products', async (req, res) => {
   const limit = 10;
 
   try {
-    const { products, totalPages } = await productManager.getProductsPage(
-      {},
-      null,
+    const { products, totalPages, hasPrevPage, hasNextPage, prevPage, nextPage } = await productManager.getProductsPage(
       limit,
       page
     );
@@ -41,8 +39,10 @@ router.get('/products', async (req, res) => {
       products,
       currentPage: page,
       totalPages,
-      hasPrevPage: page > 1,
-      hasNextPage: page < totalPages
+      hasPrevPage,
+      hasNextPage,
+      prevPage,
+      nextPage
     });
   } catch (err) {
     console.error('Error retrieving products:', err);
@@ -59,26 +59,32 @@ router.post('/products/:productId/add-to-cart', async (req, res) => {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    // Check if cart exists, otherwise create a new one
-    const carts = await cartManager.getCarts();
-    let cart = carts[0];
-    if (!cart) {
-      cart = await cartManager.createCart();
-    }
-
-    // Add the product to the cart
+    const cart = await cartManager.createCart();
     await cartManager.addProductToCart(cart._id, productId);
+
+    console.log(cart);
 
     return res.status(200).json({ message: 'Product added to cart successfully' });
   } catch (err) {
+    console.error('Error adding product to cart:', err);
     return res.status(500).json({ error: 'Error adding product to cart' });
   }
 });
+router.get('/cart/:cid', async (req, res) => {
+  try {
+    const cartId = req.params.cid;
+    const cart = await cartManager.getCartById(cartId);
 
+    if (cart) {
+      return res.render('carts', { cartId: cartId, products: cart.products });
+    } else {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+  } catch (error) {
+    console.error('Error retrieving cart:', error);
+    return res.status(500).json({ error: 'Error retrieving cart' });
+  }
+});
 router.get('/chat', (req, res) => {
   res.render('chat');
 })

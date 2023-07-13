@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
 router.get('/:cid', async (req, res) => {
   try {
     const cartId = req.params.cid;
-    const cart = await cartManager.getCartById(cartId).populate('products.product');
+    const cart = await cartManager.getCartById(cartId);
 
     if (cart) {
       return res.json(cart);

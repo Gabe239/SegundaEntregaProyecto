@@ -15,14 +15,14 @@
     </div>
     {{/each}}
 
-    <div class="pagination">
+    
         {{#if hasPrevPage}}
-        <button id="prev-page-btn" data-current-page="{{currentPage}}">Prev</button>
+        <a href="/products?page={{prevPage}}"><button>Prev</button></a>
         {{/if}}
         {{#if hasNextPage}}
-        <button id="next-page-btn" data-current-page="{{currentPage}}">Next</button>
+        <a href="/products?page={{nextPage}}"><button>Next</button></a>
         {{/if}}
-    </div>
+    
 </div>
 
 <script src="/socket.io/socket.io.js"></script>

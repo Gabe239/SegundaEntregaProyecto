@@ -4,30 +4,27 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', async () => {
       const productId = button.dataset.productId;
       try {
-        await fetch(`/products/${productId}/add-to-cart`, { method: 'POST' });
-        alert('Product added to cart successfully');
+        const response = await fetch(`/products/${productId}/add-to-cart`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(productId)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          alert('Product added to cart successfully');
+          // Perform additional actions with the result if needed
+        } else {
+          throw new Error('Error adding product to cart');
+        }
       } catch (error) {
         alert('Error adding product to cart');
-        throw new Error('Error adding product to cart: '  + err.message);
+        console.error('Error adding product to cart:', error);
       }
     });
-  });
 
-  const paginationContainer = document.querySelector('.pagination');
-  paginationContainer.addEventListener('click', async (event) => {
-    const target = event.target;
-    if (target.tagName === 'BUTTON') {
-      const currentPage = parseInt(target.dataset.currentPage);
-      const nextPage = target.id === 'next-page-btn' ? currentPage + 1 : currentPage - 1;
-      navigateToPage(nextPage);
-    }
+    
   });
-
-  function navigateToPage(page) {
-    window.location.href = `/products?page=${page}`;
-  }
 });
-
-
-
-
